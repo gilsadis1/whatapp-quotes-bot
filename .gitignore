@@ -12,3 +12,4 @@ coverage/
 
 # local runtime data
 /data/sent.json
+tests/*.js
