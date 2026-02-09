@@ -1,0 +1,46 @@
+name: Daily WhatsApp Quote
+
+on:
+  schedule:
+    # 14:00 Asia/Jerusalem is usually 12:00 UTC (standard time) and 11:00 UTC (DST).
+    # This cron uses 12:00 UTC and may be off by 1 hour during DST changes.
+    - cron: "0 12 * * *"
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Start
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
+          WHATSAPP_ACCESS_TOKEN: ${{ secrets.WHATSAPP_ACCESS_TOKEN }}
+          WHATSAPP_PHONE_NUMBER_ID: ${{ secrets.WHATSAPP_PHONE_NUMBER_ID }}
+          WHATSAPP_TO_PHONE: ${{ secrets.WHATSAPP_TO_PHONE }}
+          MIN_DAYS_BETWEEN_REPEATS: ${{ secrets.MIN_DAYS_BETWEEN_REPEATS }}
+          INCLUDE_REFLECTION_QUESTION: ${{ secrets.INCLUDE_REFLECTION_QUESTION }}
+          DRY_RUN: ${{ secrets.DRY_RUN }}
+          CONTENT_LANGUAGE: ${{ secrets.CONTENT_LANGUAGE }}
+          WIKIPEDIA_LANG: ${{ secrets.WIKIPEDIA_LANG }}
+          READ_MORE_TEXT: ${{ secrets.READ_MORE_TEXT }}
+          QUESTION_PREFIX: ${{ secrets.QUESTION_PREFIX }}
+        run: npm start

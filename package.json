@@ -1,0 +1,23 @@
+{
+  "name": "hebrew-whatsapp-quotes",
+  "version": "1.0.0",
+  "description": "Daily WhatsApp inspirational quotes in Hebrew",
+  "private": true,
+  "type": "commonjs",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/main.js",
+    "dev": "tsx src/main.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "tsx": "^4.7.2",
+    "typescript": "^5.4.5",
+    "vitest": "^1.5.3"
+  }
+}
