@@ -1,12 +1,12 @@
 # Hebrew WhatsApp Daily Quotes
 
-A small production-ready TypeScript (Node.js) project that sends a daily WhatsApp message with an inspirational quote. It selects a quote, generates a kid-friendly bio and optional reflection question via OpenAI, and sends it through the WhatsApp Cloud API. It also logs what was sent to avoid repeats.
+A small production-ready TypeScript (Node.js) project that sends a daily WhatsApp message with an inspirational quote. It selects a quote, generates a kid-friendly bio and optional reflection question via OpenAI, and sends it via Twilio WhatsApp (Sandbox or production sender). It also logs what was sent to avoid repeats.
 
 ## Features
 - Daily scheduled run (GitHub Actions)
 - Static quotes dataset (25+ quotes)
 - OpenAI-powered translation + curiosity bio
-- WhatsApp Cloud API delivery
+- Twilio WhatsApp delivery (single recipient)
 - Configurable content language (phase 1)
 - Wikipedia link in the configured language when available (falls back to English)
 - Simple repeat-avoidance log
@@ -57,9 +57,10 @@ tsconfig.json
 See `.env.example`:
 - `OPENAI_API_KEY` (required)
 - `OPENAI_MODEL` (optional, default: `gpt-4o-mini`)
-- `WHATSAPP_ACCESS_TOKEN` (required)
-- `WHATSAPP_PHONE_NUMBER_ID` (required)
-- `WHATSAPP_TO_PHONE` (required)
+- `TWILIO_ACCOUNT_SID` (required)
+- `TWILIO_AUTH_TOKEN` (required)
+- `TWILIO_WHATSAPP_FROM` (required, example `whatsapp:+14155238886` for sandbox)
+- `TWILIO_WHATSAPP_TO` (required, example `whatsapp:+9725XXXXXXXX`)
 - `MIN_DAYS_BETWEEN_REPEATS` (optional, default 90)
 - `INCLUDE_REFLECTION_QUESTION` (optional, default false)
 - `DRY_RUN` (optional, default false). When true, prints the message and does not send or log.
@@ -70,11 +71,15 @@ See `.env.example`:
 - `FORCE_QUOTE_ID` (optional, force a specific quote for testing)
 - `FORCE_AUTHOR` (optional, force a specific author for testing; exact English name match)
 
-## WhatsApp Cloud API (High-Level)
-1. Create a Meta App and enable WhatsApp Cloud API.
-2. Add and verify a phone number in the WhatsApp Cloud API dashboard.
-3. Generate a permanent access token (or a long-lived token) with permissions.
-4. Use the provided `phone_number_id` and your target `to` phone number in env vars.
+## Twilio WhatsApp Sandbox Setup
+1. In Twilio Console, open WhatsApp Sandbox:
+   [Twilio Sandbox](https://console.twilio.com/us1/develop/sms/try-it-out/whatsapp-learn)
+2. Copy the sandbox number (usually `+14155238886`) and join code.
+3. From your WhatsApp app, send the join code message once to the sandbox number.
+4. Set env vars:
+   - `TWILIO_WHATSAPP_FROM=whatsapp:+14155238886`
+   - `TWILIO_WHATSAPP_TO=whatsapp:+<your_number>`
+5. Run the bot. It sends to your single phone number; you can forward manually to your family group.
 
 ## OpenAI Usage
 The app uses OpenAI to:
@@ -92,9 +97,10 @@ The workflow in `.github/workflows/daily.yml` runs at **12:00 UTC** daily.
 ### Required GitHub Secrets
 - `OPENAI_API_KEY`
 - `OPENAI_MODEL` (optional)
-- `WHATSAPP_ACCESS_TOKEN`
-- `WHATSAPP_PHONE_NUMBER_ID`
-- `WHATSAPP_TO_PHONE`
+- `TWILIO_ACCOUNT_SID`
+- `TWILIO_AUTH_TOKEN`
+- `TWILIO_WHATSAPP_FROM`
+- `TWILIO_WHATSAPP_TO`
 - `MIN_DAYS_BETWEEN_REPEATS` (optional)
 - `INCLUDE_REFLECTION_QUESTION` (optional)
 - `DRY_RUN` (optional)

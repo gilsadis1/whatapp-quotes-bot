@@ -1,3 +1,5 @@
+import twilio from "twilio";
+
 function getEnv(name: string): string {
   const value = process.env[name];
   if (!value) {
@@ -6,45 +8,52 @@ function getEnv(name: string): string {
   return value;
 }
 
+function isTransientTwilioError(err: unknown): boolean {
+  const code = Number((err as { code?: number })?.code);
+  if (!Number.isNaN(code) && [20429, 20500, 20503].includes(code)) {
+    return true;
+  }
+
+  const status = Number((err as { status?: number })?.status);
+  if (!Number.isNaN(status) && status >= 500) {
+    return true;
+  }
+
+  return false;
+}
+
 export async function sendWhatsAppMessage(text: string): Promise<void> {
-  const accessToken = getEnv("WHATSAPP_ACCESS_TOKEN");
-  const phoneNumberId = getEnv("WHATSAPP_PHONE_NUMBER_ID");
-  const toPhone = getEnv("WHATSAPP_TO_PHONE");
+  const accountSid = getEnv("TWILIO_ACCOUNT_SID");
+  const authToken = getEnv("TWILIO_AUTH_TOKEN");
+  const from = getEnv("TWILIO_WHATSAPP_FROM");
+  const to = getEnv("TWILIO_WHATSAPP_TO");
 
-  const url = `https://graph.facebook.com/v17.0/${phoneNumberId}/messages`;
-  const payload = {
-    messaging_product: "whatsapp",
-    to: toPhone,
-    type: "text",
-    text: {
-      body: text,
-      preview_url: false
-    }
-  };
+  const client = twilio(accountSid, authToken);
+  let lastError: unknown;
 
-  let lastError: Error | null = null;
   for (let attempt = 1; attempt <= 2; attempt += 1) {
     try {
-      const res = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`
-        },
-        body: JSON.stringify(payload)
+      const result = await client.messages.create({
+        from,
+        to,
+        body: text
       });
-
-      if (!res.ok) {
-        const body = await res.text();
-        throw new Error(`WhatsApp API error ${res.status}: ${body}`);
-      }
-
+      console.log(`Twilio message queued: ${result.sid}`);
       return;
     } catch (err: unknown) {
-      lastError = err as Error;
-      console.error(`WhatsApp send attempt ${attempt} failed: ${lastError.message}`);
+      lastError = err;
+      const status = (err as { status?: number })?.status;
+      const code = (err as { code?: number })?.code;
+      const message = (err as { message?: string })?.message || "Unknown Twilio error";
+      console.error(
+        `Twilio send attempt ${attempt} failed: status=${String(status)} code=${String(code)} message=${message}`
+      );
+
+      if (attempt >= 2 || !isTransientTwilioError(err)) {
+        break;
+      }
     }
   }
 
-  throw lastError ?? new Error("WhatsApp send failed");
+  throw lastError instanceof Error ? lastError : new Error("Twilio WhatsApp send failed");
 }
