@@ -5,7 +5,7 @@ import { selectQuote } from "./core/selector";
 import { buildMessage } from "./core/messageBuilder";
 import { fetchWikipediaSummary, resolveWikipediaUrl } from "./services/wikipedia";
 import { generateLocalizedContent } from "./services/openai";
-import { sendWhatsAppMessage } from "./services/whatsapp";
+import { sendEmailMessage } from "./services/email";
 
 function parseBool(value: string | undefined): boolean {
   if (!value) return false;
@@ -48,6 +48,11 @@ function defaultQuestionPrefix(language: string): string {
   return "Question of the day:";
 }
 
+function defaultSubject(language: string): string {
+  if (language === "he") return "השראה יומית";
+  return "Daily Inspiration";
+}
+
 async function run(): Promise<void> {
   const minDays = Number(process.env.MIN_DAYS_BETWEEN_REPEATS || "90");
   const includeReflection = parseBool(process.env.INCLUDE_REFLECTION_QUESTION);
@@ -56,6 +61,7 @@ async function run(): Promise<void> {
   const wikipediaLang = getWikipediaLanguage();
   const readMoreOverride = (process.env.READ_MORE_TEXT || "").trim();
   const questionPrefix = (process.env.QUESTION_PREFIX || "").trim();
+  const subject = (process.env.EMAIL_SUBJECT || "").trim() || defaultSubject(contentLanguage);
 
   console.log("Loading sent log...");
   const sentLog = await readSentLog();
@@ -108,8 +114,8 @@ async function run(): Promise<void> {
     return;
   }
 
-  console.log("Sending WhatsApp message...");
-  await sendWhatsAppMessage(message);
+  console.log("Sending email...");
+  await sendEmailMessage(subject, message);
 
   const today = new Date().toISOString().slice(0, 10);
   await appendSentLog({ date: today, quoteId: selection.quote.id });

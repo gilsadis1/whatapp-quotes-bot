@@ -1,4 +1,18 @@
-name: Daily WhatsApp Quote
+name: Daily Inspiration Quote
+
+env:
+  OPENAI_MODEL: gpt-4o-mini
+  SMTP_HOST: smtp.gmail.com
+  SMTP_PORT: "587"
+  SMTP_SECURE: "false"
+  EMAIL_FROM_NAME: Daily Quote Bot
+  MIN_DAYS_BETWEEN_REPEATS: "90"
+  INCLUDE_REFLECTION_QUESTION: "false"
+  DRY_RUN: "false"
+  CONTENT_LANGUAGE: "he"
+  WIKIPEDIA_LANG: "he"
+  READ_MORE_TEXT: ""
+  QUESTION_PREFIX: ""
 
 on:
   schedule:
@@ -29,19 +43,22 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Check config
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_SUBJECT: ${{ secrets.EMAIL_SUBJECT }}
+        run: npm run check-config
+
       - name: Start
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
-          TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
-          TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
-          TWILIO_WHATSAPP_FROM: ${{ secrets.TWILIO_WHATSAPP_FROM }}
-          TWILIO_WHATSAPP_TO: ${{ secrets.TWILIO_WHATSAPP_TO }}
-          MIN_DAYS_BETWEEN_REPEATS: ${{ secrets.MIN_DAYS_BETWEEN_REPEATS }}
-          INCLUDE_REFLECTION_QUESTION: ${{ secrets.INCLUDE_REFLECTION_QUESTION }}
-          DRY_RUN: ${{ secrets.DRY_RUN }}
-          CONTENT_LANGUAGE: ${{ secrets.CONTENT_LANGUAGE }}
-          WIKIPEDIA_LANG: ${{ secrets.WIKIPEDIA_LANG }}
-          READ_MORE_TEXT: ${{ secrets.READ_MORE_TEXT }}
-          QUESTION_PREFIX: ${{ secrets.QUESTION_PREFIX }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_SUBJECT: ${{ secrets.EMAIL_SUBJECT }}
         run: npm start

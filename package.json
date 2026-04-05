@@ -1,7 +1,7 @@
 {
-  "name": "hebrew-whatsapp-quotes",
+  "name": "daily-inspiration-quote",
   "version": "1.0.0",
-  "description": "Daily WhatsApp inspirational quotes in Hebrew",
+  "description": "Daily inspirational quote email in Hebrew",
   "private": true,
   "type": "commonjs",
   "main": "dist/main.js",
@@ -9,14 +9,16 @@
     "build": "tsc",
     "start": "node dist/main.js",
     "dev": "tsx src/main.ts",
+    "check-config": "tsx src/checkConfig.ts",
     "test": "vitest run"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
-    "twilio": "^5.5.4"
+    "nodemailer": "^6.9.16"
   },
   "devDependencies": {
     "@types/node": "^20.11.30",
+    "@types/nodemailer": "^6.4.16",
     "tsx": "^4.7.2",
     "typescript": "^5.4.5",
     "vitest": "^1.5.3"

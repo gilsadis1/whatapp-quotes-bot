@@ -1,25 +1,164 @@
-# Hebrew WhatsApp Daily Quotes
+# Daily Inspiration Quote
 
-A small production-ready TypeScript (Node.js) project that sends a daily WhatsApp message with an inspirational quote. It selects a quote, generates a kid-friendly bio and optional reflection question via OpenAI, and sends it via Twilio WhatsApp (Sandbox or production sender). It also logs what was sent to avoid repeats.
+`Daily Inspiration Quote` sends one daily inspirational message by email. It picks a quote, translates it into Hebrew, adds a short kid-friendly bio, includes a Wikipedia link, and sends the result to a single email address.
 
-## Features
-- Daily scheduled run (GitHub Actions)
-- Static quotes dataset (25+ quotes)
-- OpenAI-powered translation + curiosity bio
-- Twilio WhatsApp delivery (single recipient)
-- Configurable content language (phase 1)
-- Wikipedia link in the configured language when available (falls back to English)
-- Simple repeat-avoidance log
-- Minimal tests
+The project is designed for one personal recipient first. You can forward the email wherever you want after it arrives.
 
-## Repo Structure
+## Who this is for
+This repo is best for people who are comfortable with:
+- editing a `.env` file
+- creating API keys and app passwords
+- optionally using GitHub Actions for daily automation
+
+If that sounds like you, setup is straightforward.
+
+## Quick Start
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+2. Create `.env` from `.env.example`.
+3. Fill in:
+   - `OPENAI_API_KEY`
+   - `SMTP_USER`
+   - `SMTP_PASS`
+   - `EMAIL_FROM`
+   - `EMAIL_TO`
+4. Check your config:
+   ```bash
+   npm run check-config
+   ```
+5. Try a dry run:
+   ```bash
+   DRY_RUN=true npm start
+   ```
+6. Send a real email:
+   ```bash
+   DRY_RUN=false npm start
+   ```
+
+## Local Use
+You do not need GitHub Actions to use this project.
+
+You can run it manually whenever you want:
+```bash
+npm start
 ```
+
+Or schedule it locally with `cron`, `launchd`, or any scheduler you already use.
+
+## GitHub Actions Use
+If you want GitHub to run it every day:
+1. Push the repo to your own GitHub account.
+2. Add the required repository secrets.
+3. Run the workflow manually once to confirm delivery.
+4. Leave the schedule enabled.
+The workflow lives in `.github/workflows/daily.yml`.
+
+## SMTP Setup
+This project uses SMTP because it is simple and reliable for personal automation.
+
+Example Gmail setup:
+1. Turn on 2-Step Verification in your Google account.
+2. Generate an app password.
+3. Use:
+   - `SMTP_HOST=smtp.gmail.com`
+   - `SMTP_PORT=587`
+   - `SMTP_SECURE=false`
+   - `SMTP_USER=your_email@gmail.com`
+   - `SMTP_PASS=your_gmail_app_password`
+   - `EMAIL_FROM=your_email@gmail.com`
+   - `EMAIL_TO=your_email@gmail.com`
+
+## Environment Variables
+See `.env.example`.
+
+Required for normal sending:
+- `OPENAI_API_KEY`
+- `SMTP_HOST`
+- `SMTP_USER`
+- `SMTP_PASS`
+- `EMAIL_TO`
+- `EMAIL_FROM` if you want it to be different from `SMTP_USER`
+
+Common optional values:
+- `OPENAI_MODEL`
+- `EMAIL_FROM_NAME`
+- `EMAIL_SUBJECT`
+- `MIN_DAYS_BETWEEN_REPEATS`
+- `INCLUDE_REFLECTION_QUESTION`
+- `DRY_RUN`
+- `CONTENT_LANGUAGE`
+- `WIKIPEDIA_LANG`
+- `READ_MORE_TEXT`
+- `QUESTION_PREFIX`
+- `FORCE_QUOTE_ID`
+- `FORCE_AUTHOR`
+
+## GitHub Secrets
+If you use GitHub Actions, the minimal required repository secrets are:
+- `OPENAI_API_KEY`
+- `SMTP_USER`
+- `SMTP_PASS`
+- `EMAIL_TO`
+
+Optional secrets:
+- `EMAIL_FROM`
+- `EMAIL_SUBJECT`
+
+The workflow already provides sensible defaults for:
+- `OPENAI_MODEL=gpt-4o-mini`
+- `SMTP_HOST=smtp.gmail.com`
+- `SMTP_PORT=587`
+- `SMTP_SECURE=false`
+- `EMAIL_FROM_NAME=Daily Quote Bot`
+- `MIN_DAYS_BETWEEN_REPEATS=90`
+- `INCLUDE_REFLECTION_QUESTION=false`
+- `DRY_RUN=false`
+- `CONTENT_LANGUAGE=he`
+- `WIKIPEDIA_LANG=he`
+
+If you want to customize those later, you can edit `.github/workflows/daily.yml` or extend the workflow to use repository variables.
+
+## Helpful Commands
+Install dependencies:
+```bash
+npm install
+```
+
+Validate setup:
+```bash
+npm run check-config
+```
+
+Run tests:
+```bash
+npm test
+```
+
+Build:
+```bash
+npm run build
+```
+
+Dry run:
+```bash
+DRY_RUN=true npm start
+```
+
+Real send:
+```bash
+DRY_RUN=false npm start
+```
+
+## Project Structure
+```text
 /src
   /quotes
     quotes.ts
   /services
+    email.ts
     openai.ts
-    whatsapp.ts
     wikipedia.ts
   /core
     selector.ts
@@ -31,94 +170,9 @@ A small production-ready TypeScript (Node.js) project that sends a daily WhatsAp
 /tests
   selector.test.ts
   messageBuilder.test.ts
-.github/workflows/daily.yml
-.env.example
-README.md
-package.json
-tsconfig.json
 ```
 
-## Requirements
-- Node.js 20+
-- npm
-
-## Local Setup
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
-2. Create a `.env` file based on `.env.example` and fill in values.
-3. Run locally:
-   ```bash
-   npm run dev
-   ```
-
-## Environment Variables
-See `.env.example`:
-- `OPENAI_API_KEY` (required)
-- `OPENAI_MODEL` (optional, default: `gpt-4o-mini`)
-- `TWILIO_ACCOUNT_SID` (required)
-- `TWILIO_AUTH_TOKEN` (required)
-- `TWILIO_WHATSAPP_FROM` (required, example `whatsapp:+14155238886` for sandbox)
-- `TWILIO_WHATSAPP_TO` (required, example `whatsapp:+9725XXXXXXXX`)
-- `MIN_DAYS_BETWEEN_REPEATS` (optional, default 90)
-- `INCLUDE_REFLECTION_QUESTION` (optional, default false)
-- `DRY_RUN` (optional, default false). When true, prints the message and does not send or log.
-- `CONTENT_LANGUAGE` (optional, default `he`)
-- `WIKIPEDIA_LANG` (optional, default `he`; falls back to English if not found)
-- `READ_MORE_TEXT` (optional override for the “read more” line)
-- `QUESTION_PREFIX` (optional override for the reflection question prefix)
-- `FORCE_QUOTE_ID` (optional, force a specific quote for testing)
-- `FORCE_AUTHOR` (optional, force a specific author for testing; exact English name match)
-
-## Twilio WhatsApp Sandbox Setup
-1. In Twilio Console, open WhatsApp Sandbox:
-   [Twilio Sandbox](https://console.twilio.com/us1/develop/sms/try-it-out/whatsapp-learn)
-2. Copy the sandbox number (usually `+14155238886`) and join code.
-3. From your WhatsApp app, send the join code message once to the sandbox number.
-4. Set env vars:
-   - `TWILIO_WHATSAPP_FROM=whatsapp:+14155238886`
-   - `TWILIO_WHATSAPP_TO=whatsapp:+<your_number>`
-5. Run the bot. It sends to your single phone number; you can forward manually to your family group.
-
-## OpenAI Usage
-The app uses OpenAI to:
-- Translate the quote
-- Produce 2–3 short kid-friendly curiosity sentences
-- Optionally add a reflection question
-
-The prompt instructs the model to output only JSON, avoid inventing facts, and follow gendered grammar where applicable.
-
-## GitHub Actions Schedule
-The workflow in `.github/workflows/daily.yml` runs at **12:00 UTC** daily.
-- This corresponds to **14:00 Asia/Jerusalem** during standard time.
-- It may drift by 1 hour during daylight saving time (DST).
-
-### Required GitHub Secrets
-- `OPENAI_API_KEY`
-- `OPENAI_MODEL` (optional)
-- `TWILIO_ACCOUNT_SID`
-- `TWILIO_AUTH_TOKEN`
-- `TWILIO_WHATSAPP_FROM`
-- `TWILIO_WHATSAPP_TO`
-- `MIN_DAYS_BETWEEN_REPEATS` (optional)
-- `INCLUDE_REFLECTION_QUESTION` (optional)
-- `DRY_RUN` (optional)
-- `CONTENT_LANGUAGE` (optional)
-- `WIKIPEDIA_LANG` (optional)
-- `READ_MORE_TEXT` (optional)
-- `QUESTION_PREFIX` (optional)
-
-## Adding More Quotes
-Edit `src/quotes/quotes.ts` and append items to `QUOTES`. Each item needs:
-- `id`
-- `author` (English)
-- `gender` (`male` | `female` | `other`)
-- `quote_en`
-- `wikipedia` (full URL)
-- `tags`
-
 ## Notes
+- `.env` is git-ignored. Real credentials should never be committed.
+- `data/sent.json` is git-ignored so your send history stays private.
 - Dates in `data/sent.json` use UTC `YYYY-MM-DD` format.
-- `.env` is intentionally git-ignored. Do not commit real keys.
-- `data/sent.json` is git-ignored to avoid leaking usage history when publishing.

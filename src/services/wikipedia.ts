@@ -16,7 +16,7 @@ export async function fetchWikipediaSummary(authorName: string): Promise<string 
   try {
     const res = await fetch(url, {
       headers: {
-        "User-Agent": "hebrew-whatsapp-quotes/1.0"
+        "User-Agent": "daily-inspiration-quote/1.0"
       }
     });
 
@@ -47,7 +47,7 @@ async function resolveViaLangLinks(
 
   const res = await fetch(apiUrl, {
     headers: {
-      "User-Agent": "hebrew-whatsapp-quotes/1.0"
+      "User-Agent": "daily-inspiration-quote/1.0"
     }
   });
 
@@ -73,7 +73,7 @@ async function resolveViaDirectSummary(authorName: string, targetLang: string): 
 
   const res = await fetch(url, {
     headers: {
-      "User-Agent": "hebrew-whatsapp-quotes/1.0"
+      "User-Agent": "daily-inspiration-quote/1.0"
     }
   });
 
@@ -99,7 +99,7 @@ async function resolveViaWikidata(
 
   const pagePropsRes = await fetch(pagePropsUrl, {
     headers: {
-      "User-Agent": "hebrew-whatsapp-quotes/1.0"
+      "User-Agent": "daily-inspiration-quote/1.0"
     }
   });
 
@@ -121,7 +121,7 @@ async function resolveViaWikidata(
 
   const entityRes = await fetch(entityUrl, {
     headers: {
-      "User-Agent": "hebrew-whatsapp-quotes/1.0"
+      "User-Agent": "daily-inspiration-quote/1.0"
     }
   });
 
@@ -147,7 +147,7 @@ async function resolveViaOpenSearch(authorName: string, targetLang: string): Pro
 
   const res = await fetch(url, {
     headers: {
-      "User-Agent": "hebrew-whatsapp-quotes/1.0"
+      "User-Agent": "daily-inspiration-quote/1.0"
     }
   });
 
