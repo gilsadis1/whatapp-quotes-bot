@@ -23,13 +23,24 @@ const quotes: QuoteItem[] = [
 ];
 
 describe("selectQuote", () => {
-  it("avoids recently used quotes", () => {
+  it("prefers quotes that were never used", () => {
     const sentLog: SentEntry[] = [
       { date: "2026-02-01", quoteId: "q1" }
     ];
     const now = new Date("2026-02-08T12:00:00Z");
     const result = selectQuote(quotes, sentLog, 90, now);
     expect(result.quote.id).toBe("q2");
+    expect(result.reused).toBe(false);
+  });
+
+  it("avoids recently used quotes", () => {
+    const sentLog: SentEntry[] = [
+      { date: "2025-10-01", quoteId: "q1" },
+      { date: "2026-02-01", quoteId: "q2" }
+    ];
+    const now = new Date("2026-02-08T12:00:00Z");
+    const result = selectQuote(quotes, sentLog, 90, now);
+    expect(result.quote.id).toBe("q1");
     expect(result.reused).toBe(false);
   });
 });

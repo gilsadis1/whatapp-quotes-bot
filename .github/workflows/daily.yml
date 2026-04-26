@@ -34,6 +34,20 @@ jobs:
           node-version: 20
           cache: npm
 
+      - name: Restore sent history
+        id: sent-history-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: data/sent.json
+          key: sent-history-${{ github.ref_name }}-${{ github.run_id }}
+          restore-keys: |
+            sent-history-${{ github.ref_name }}-
+
+      - name: Ensure sent history file exists
+        run: |
+          mkdir -p data
+          test -f data/sent.json || echo "[]" > data/sent.json
+
       - name: Install dependencies
         run: npm ci
 
@@ -62,3 +76,10 @@ jobs:
           EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
           EMAIL_SUBJECT: ${{ secrets.EMAIL_SUBJECT }}
         run: npm start
+
+      - name: Save sent history
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: data/sent.json
+          key: sent-history-${{ github.ref_name }}-${{ github.run_id }}

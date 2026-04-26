@@ -27,15 +27,23 @@ export function selectQuote(
 
   const nowDateStr = toDateOnly(now);
   const recentQuoteIds = new Set<string>();
+  const usedQuoteIds = new Set<string>();
 
   for (const entry of sentLog) {
     if (!entry.date || !entry.quoteId) continue;
+    usedQuoteIds.add(entry.quoteId);
     const entryDate = new Date(entry.date + "T00:00:00Z");
     const nowDate = new Date(nowDateStr + "T00:00:00Z");
     const diff = daysBetween(entryDate, nowDate);
     if (diff >= 0 && diff < minDaysBetween) {
       recentQuoteIds.add(entry.quoteId);
     }
+  }
+
+  const neverUsed = quotes.filter((q) => !usedQuoteIds.has(q.id));
+  if (neverUsed.length > 0) {
+    const quote = neverUsed[Math.floor(Math.random() * neverUsed.length)];
+    return { quote, reused: false };
   }
 
   const fresh = quotes.filter((q) => !recentQuoteIds.has(q.id));
